@@ -44,7 +44,7 @@ private:
 };
 class Character {
 public:
-    Character(sf::Vector2f& pos) :
+    Character(const sf::Vector2f& pos) :
         mSprite(),
         mVelocity(0.0f, 0.0f),
         mDisplacement(0.0f,0.0f),
