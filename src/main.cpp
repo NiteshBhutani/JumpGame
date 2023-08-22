@@ -1,6 +1,18 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <iostream>
+#include <utility>
+#include <vector>
+#include <random>
+
+std::random_device rd;
+std::mt19937 gen(rd());
+ 
+int random(int low, int high)
+{
+    std::uniform_int_distribution<> dist(low, high);
+    return dist(gen);
+}
 
 
 class Platform {
@@ -17,12 +29,13 @@ public:
         mSprite.setOutlineThickness(2);
     }
 
-    Platform(float width, float x) :
+    Platform(float width, float y, float x) :
         mSize(sf::Vector2f(width, 10)),
         mSprite(),
-        mVelocity(0.0, 100.0f)
+        mVelocity(0.0, 50.0f)
     {
-        mSprite.setPosition(x, 0.0f);
+        mSprite.setPosition(x, y);
+        mSprite.setSize(mSize);
         mSprite.setFillColor(sf::Color::Yellow);
         mSprite.setOutlineColor(sf::Color::Red);
         mSprite.setOutlineThickness(2);
@@ -30,7 +43,7 @@ public:
 
     void update(const sf::Time& delta) {
         sf::Vector2f displacement = mVelocity * delta.asSeconds();
-
+        
         mSprite.move(displacement);
     }
 
@@ -42,13 +55,13 @@ private:
     sf::Vector2f mVelocity;
     sf::RectangleShape mSprite;
 };
+
 class Character {
 public:
     Character(const sf::Vector2f& pos) :
         mSprite(),
         mVelocity(0.0f, 0.0f),
         mDisplacement(0.0f,0.0f),
-        mFloor(),
         jumpInitialVelocity(0.0f, 0.0f),
         isJumping(false)
     {
@@ -58,8 +71,6 @@ public:
         mSprite.setOutlineThickness(3);
         mSprite.setSize(sf::Vector2f(50, 50));
 
-        mFloor.setSize(sf::Vector2f(800,10));
-        mFloor.setPosition(0, pos.y + 100);
     }
 
     void update(const sf::Time& delta)
@@ -88,18 +99,10 @@ public:
 
         jumpInitialVelocity.y = mVelocity.y;
         
-        //we hit the floor
-        if (mSprite.getPosition().y + 50 > mFloor.getPosition().y) {
-            auto x = mSprite.getPosition().x;
-            mSprite.setPosition(x, mFloor.getPosition().y - 50);
-            jumpInitialVelocity = { 0.0f, 0.0f };
-            isJumping = false;
-        }
         
     }
     void draw(sf::RenderTarget& window) {
         window.draw(mSprite);
-        window.draw(mFloor);
     }
     
 public:
@@ -115,10 +118,6 @@ private:
     // When the up arrow is pressed how much vertical velocity to give
     sf::Vector2f jumpInitialVelocity; 
     bool isJumping;
-
-
-    sf::RectangleShape mFloor;
-    
 };
 
 const float Character::speedRate = 150;
@@ -133,7 +132,17 @@ public:
         mWindow(sf::VideoMode(width,height), "JumpGame"),
         actor(sf::Vector2f(width/2.f, height/2.f)),
         platform()
-    {}
+    {
+        auto platformActorPair1 = std::make_pair(Platform(random(100,mWindowWidth/3.0f), 0, random(0, mWindowWidth/2.0f)), nullptr);
+        auto platformActorPair2 = std::make_pair(Platform(random(100,mWindowWidth/4.0f), 300,random(mWindowWidth/4.0f, mWindowWidth/2.0f)), nullptr);
+        auto platformActorPair3 = std::make_pair(Platform(random(100,mWindowWidth/2.0f),500, random(mWindowWidth/4.0f, 3 * (mWindowWidth/4.0f) )), nullptr);
+        
+        platform.emplace_back(platformActorPair1);
+        platform.emplace_back(platformActorPair2);
+        platform.emplace_back(platformActorPair3);
+        
+
+    }
     
     void processEvents();
     void update(const sf::Time& delta);
@@ -149,7 +158,7 @@ private:
     unsigned int mWindowHeight;
     sf::RenderWindow mWindow;
     Character actor;
-    Platform platform;
+    std::vector<std::pair<Platform, Character*>> platform;
 };
 
 const sf::Time App::timePerFrame = sf::seconds(1.f / 60.f);
@@ -165,8 +174,12 @@ void App::processEvents()  {
 }
 
 void App::update(const sf::Time& delta) {
+
     actor.update(delta);
-    platform.update(delta);
+    for(auto& p : platform)
+    {
+        p.first.update(delta);
+    }
 }
 
 void App::render() {
@@ -175,7 +188,10 @@ void App::render() {
 
     // draw everything here...
     actor.draw(mWindow);
-    platform.draw(mWindow);
+    for(auto& p : platform)
+    {
+        p.first.draw(mWindow);
+    }
     // end the current frame
     mWindow.display();
 }
@@ -200,8 +216,10 @@ void App::run() {
         render();
     }
 }
+
 int main()
 {
+    
     App app(800,600);
     app.run();
 
