@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <iostream>
+#include <memory>
 #include <utility>
 #include <vector>
 #include <random>
@@ -130,18 +131,21 @@ public:
         mWindowWidth(width),
         mWindowHeight(height),
         mWindow(sf::VideoMode(width,height), "JumpGame"),
-        actor(sf::Vector2f(width/2.f, height/2.f)),
+        actor(),
         platform()
     {
+        actor = std::make_shared<Character>(sf::Vector2f(width/2.f, height/2.f));
+
         auto platformActorPair1 = std::make_pair(Platform(random(100,mWindowWidth/3.0f), 0, random(0, mWindowWidth/2.0f)), nullptr);
-        auto platformActorPair2 = std::make_pair(Platform(random(100,mWindowWidth/4.0f), 300,random(mWindowWidth/4.0f, mWindowWidth/2.0f)), nullptr);
+        auto platformActorPair2 = std::make_pair(Platform(random(100,mWindowWidth/4.0f), 300,random(mWindowWidth/4.0f, mWindowWidth/2.0f)), actor);
         auto platformActorPair3 = std::make_pair(Platform(random(100,mWindowWidth/2.0f),500, random(mWindowWidth/4.0f, 3 * (mWindowWidth/4.0f) )), nullptr);
         
         platform.emplace_back(platformActorPair1);
         platform.emplace_back(platformActorPair2);
         platform.emplace_back(platformActorPair3);
         
-
+        
+        
     }
     
     void processEvents();
@@ -157,8 +161,8 @@ private:
     unsigned int mWindowWidth;
     unsigned int mWindowHeight;
     sf::RenderWindow mWindow;
-    Character actor;
-    std::vector<std::pair<Platform, Character*>> platform;
+    std::shared_ptr<Character> actor;
+    std::vector<std::pair<Platform, std::shared_ptr<Character>>> platform;
 };
 
 const sf::Time App::timePerFrame = sf::seconds(1.f / 60.f);
@@ -175,7 +179,7 @@ void App::processEvents()  {
 
 void App::update(const sf::Time& delta) {
 
-    actor.update(delta);
+    actor->update(delta);
     for(auto& p : platform)
     {
         p.first.update(delta);
@@ -187,7 +191,7 @@ void App::render() {
     mWindow.clear();
 
     // draw everything here...
-    actor.draw(mWindow);
+    actor->draw(mWindow);
     for(auto& p : platform)
     {
         p.first.draw(mWindow);
