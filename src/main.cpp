@@ -1,3 +1,4 @@
+#include "SFML/System/Vector2.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <iostream>
@@ -51,6 +52,10 @@ public:
     void draw(sf::RenderTarget& target) {
         target.draw(mSprite);
     }
+
+    float getPlatformHeight() const {
+        return mSprite.getPosition().y;
+    }
 private:
     sf::Vector2f mSize;
     sf::Vector2f mVelocity;
@@ -74,33 +79,38 @@ public:
 
     }
 
-    void update(const sf::Time& delta)
+    void update(const sf::Time& delta, const Platform* platform)
     {
-        sf::Vector2f direction = { 0.0, 0.0 };
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-            direction.x += 1.0f;
+        if(platform) {
+            auto y = platform->getPlatformHeight() - 50;
+            auto x = mSprite.getPosition().x;
+            mSprite.setPosition(x,y);
+        } else {
+            sf::Vector2f direction = { 0.0, 0.0 };
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+                direction.x += 1.0f;
+            }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+                direction.x += -1.0f;
+            }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && !isJumping) {
+                jumpInitialVelocity = { direction.x * speedRate , -800.0f };
+                isJumping = true;
+            }
+
+            
+            mVelocity.x = (jumpInitialVelocity.x + direction.x * speedRate);
+            mVelocity.y = (jumpInitialVelocity.y + gravityRate * Character::gravity * delta.asSeconds());
+            mDisplacement.x = mVelocity.x * delta.asSeconds();
+            mDisplacement.y = (jumpInitialVelocity.y * delta.asSeconds() + 0.5f * gravityRate * gravity * delta.asSeconds() * delta.asSeconds());
+            
+            mSprite.move(mDisplacement);
+
+            jumpInitialVelocity.y = mVelocity.y;
+            
         }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-            direction.x += -1.0f;
-        }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && !isJumping) {
-            jumpInitialVelocity = { direction.x * speedRate , -800.0f };
-            isJumping = true;
-        }
-
-        
-        mVelocity.x = (jumpInitialVelocity.x + direction.x * speedRate);
-        mVelocity.y = (jumpInitialVelocity.y + gravityRate * Character::gravity * delta.asSeconds());
-        mDisplacement.x = mVelocity.x * delta.asSeconds();
-        mDisplacement.y = (jumpInitialVelocity.y * delta.asSeconds() + 0.5f * gravityRate * gravity * delta.asSeconds() * delta.asSeconds());
-        
-        mSprite.move(mDisplacement);
-
-        jumpInitialVelocity.y = mVelocity.y;
-        
-        
     }
     void draw(sf::RenderTarget& window) {
         window.draw(mSprite);
@@ -136,9 +146,9 @@ public:
     {
         actor = std::make_shared<Character>(sf::Vector2f(width/2.f, height/2.f));
 
-        auto platformActorPair1 = std::make_pair(Platform(random(100,mWindowWidth/3.0f), 0, random(0, mWindowWidth/2.0f)), nullptr);
-        auto platformActorPair2 = std::make_pair(Platform(random(100,mWindowWidth/4.0f), 300,random(mWindowWidth/4.0f, mWindowWidth/2.0f)), actor);
-        auto platformActorPair3 = std::make_pair(Platform(random(100,mWindowWidth/2.0f),500, random(mWindowWidth/4.0f, 3 * (mWindowWidth/4.0f) )), nullptr);
+        auto platformActorPair1 = std::make_pair(new Platform(random(100,mWindowWidth/3.0f), 0, random(0, mWindowWidth/2.0f)), nullptr);
+        auto platformActorPair2 = std::make_pair(new Platform(random(100,mWindowWidth/4.0f), 300,random(mWindowWidth/4.0f, mWindowWidth/2.0f)), actor);
+        auto platformActorPair3 = std::make_pair(new Platform(random(100,mWindowWidth/2.0f),500, random(mWindowWidth/4.0f, 3 * (mWindowWidth/4.0f) )), nullptr);
         
         platform.emplace_back(platformActorPair1);
         platform.emplace_back(platformActorPair2);
@@ -162,7 +172,7 @@ private:
     unsigned int mWindowHeight;
     sf::RenderWindow mWindow;
     std::shared_ptr<Character> actor;
-    std::vector<std::pair<Platform, std::shared_ptr<Character>>> platform;
+    std::vector<std::pair<std::unique_ptr<Platform>, std::shared_ptr<Character>>> platform;
 };
 
 const sf::Time App::timePerFrame = sf::seconds(1.f / 60.f);
@@ -179,10 +189,13 @@ void App::processEvents()  {
 
 void App::update(const sf::Time& delta) {
 
-    actor->update(delta);
+    //actor->update(delta);
     for(auto& p : platform)
     {
-        p.first.update(delta);
+        p.first->update(delta);
+        if(p.second) {
+            p.second->update(delta, p.first.get());
+        }
     }
 }
 
@@ -194,7 +207,7 @@ void App::render() {
     actor->draw(mWindow);
     for(auto& p : platform)
     {
-        p.first.draw(mWindow);
+        p.first->draw(mWindow);
     }
     // end the current frame
     mWindow.display();
