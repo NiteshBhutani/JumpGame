@@ -6,15 +6,19 @@
 #include <utility>
 #include <vector>
 #include <random>
-
+#include <deque>
 std::random_device rd;
 std::mt19937 gen(rd());
  
-int random(int low, int high)
+static const unsigned int screenWidth = 800;
+static const unsigned int screenHeight = 600;
+
+float random(int low, int high)
 {
     std::uniform_int_distribution<> dist(low, high);
-    return dist(gen);
+    return (float)dist(gen);
 }
+
 
 
 class Platform {
@@ -22,7 +26,7 @@ public:
     Platform():
         mSize(sf::Vector2f(400, 10)),
         mSprite(),
-        mVelocity(0.0, 50.0f)
+        mVelocity(0.0, 0.0f)
     {
         mSprite.setPosition(0.0f, 0.0f);
         mSprite.setSize(mSize);
@@ -34,7 +38,7 @@ public:
     Platform(float width, float y, float x) :
         mSize(sf::Vector2f(width, 10)),
         mSprite(),
-        mVelocity(0.0, 50.0f)
+        mVelocity(0.0, 0.0f)
     {
         mSprite.setPosition(x, y);
         mSprite.setSize(mSize);
@@ -56,10 +60,65 @@ public:
     float getPlatformHeight() const {
         return mSprite.getPosition().y;
     }
+
 private:
     sf::Vector2f mSize;
     sf::Vector2f mVelocity;
     sf::RectangleShape mSprite;
+};
+
+class PlatformPool {
+public:
+    PlatformPool() :
+        mSize(10)
+    {
+        std::unique_ptr<Platform> p1 = std::make_unique<Platform>(random(100,screenWidth/4), screenHeight-100,random(screenWidth/4, screenWidth/2));
+        std::unique_ptr<Platform> p2 = std::make_unique<Platform>(random(100,screenWidth/2), (float)screenHeight/2, random(screenWidth/4, (int)(3*(screenWidth/4.0f)) ));
+
+        platforms.push_back(std::move(p1));
+        platforms.push_back(std::move(p2));
+
+        createPlatforms();
+    }
+    
+    auto& getPlatforms() {
+        return platforms;
+    }
+private:
+    void createPlatforms() {
+        int i = 1;
+        while (platforms.size() <= mSize) {
+            auto lastPlatformPosition = platforms.back()->getPlatformHeight();
+            auto y =  lastPlatformPosition - (float)random(100,300) ;
+            float x;
+            if (i % 4 == 1) {
+                x = random(0, screenWidth/4);
+            }
+            else if (i % 4 == 2) {
+                x = random(screenWidth/4, screenWidth/2);
+            }
+            else if (i % 4 == 3) {
+                x = random(screenWidth/2, (int) (0.75* screenWidth));
+            }
+            else {
+                x = random((int)(0.75 * screenWidth), screenWidth);
+            }
+            float width;
+
+            if (i % 4 == 1 || i % 4 == 3) {
+                width = random(100, screenWidth / 2);
+            }
+            else {
+                width = random(100, screenWidth / 4);
+            }
+            std::unique_ptr<Platform> p = std::make_unique<Platform>(width,y,x);
+            platforms.push_back(std::move(p));
+            i++;
+        }
+    }
+private:
+    size_t mSize;
+    std::deque<std::shared_ptr<Platform>> platforms;
 };
 
 class Character {
@@ -79,38 +138,34 @@ public:
 
     }
 
-    void update(const sf::Time& delta, const Platform* platform)
+    void update(const sf::Time& delta)
     {
-        if(platform) {
-            auto y = platform->getPlatformHeight() - 50;
-            auto x = mSprite.getPosition().x;
-            mSprite.setPosition(x,y);
-        } else {
-            sf::Vector2f direction = { 0.0, 0.0 };
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-                direction.x += 1.0f;
-            }
-
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-                direction.x += -1.0f;
-            }
-
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && !isJumping) {
-                jumpInitialVelocity = { direction.x * speedRate , -800.0f };
-                isJumping = true;
-            }
-
-            
-            mVelocity.x = (jumpInitialVelocity.x + direction.x * speedRate);
-            mVelocity.y = (jumpInitialVelocity.y + gravityRate * Character::gravity * delta.asSeconds());
-            mDisplacement.x = mVelocity.x * delta.asSeconds();
-            mDisplacement.y = (jumpInitialVelocity.y * delta.asSeconds() + 0.5f * gravityRate * gravity * delta.asSeconds() * delta.asSeconds());
-            
-            mSprite.move(mDisplacement);
-
-            jumpInitialVelocity.y = mVelocity.y;
-            
+        
+        sf::Vector2f direction = { 0.0, 0.0 };
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+            direction.x += 1.0f;
         }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+            direction.x += -1.0f;
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && !isJumping) {
+            jumpInitialVelocity = { direction.x * speedRate , -800.0f };
+            isJumping = true;
+        }
+
+            
+        mVelocity.x = (jumpInitialVelocity.x + direction.x * speedRate);
+        mVelocity.y = (jumpInitialVelocity.y + gravityRate * Character::gravity * delta.asSeconds());
+        mDisplacement.x = mVelocity.x * delta.asSeconds();
+        mDisplacement.y = (jumpInitialVelocity.y * delta.asSeconds() + 0.5f * gravityRate * gravity * delta.asSeconds() * delta.asSeconds());
+            
+        mSprite.move(mDisplacement);
+
+        jumpInitialVelocity.y = mVelocity.y;
+            
+        
     }
     void draw(sf::RenderTarget& window) {
         window.draw(mSprite);
@@ -141,21 +196,9 @@ public:
         mWindowWidth(width),
         mWindowHeight(height),
         mWindow(sf::VideoMode(width,height), "JumpGame"),
-        actor(),
-        platform()
+        actor()
     {
         actor = std::make_shared<Character>(sf::Vector2f(width/2.f, height/2.f));
-
-        auto platformActorPair1 = std::make_pair(new Platform(random(100,mWindowWidth/3.0f), 0, random(0, mWindowWidth/2.0f)), nullptr);
-        auto platformActorPair2 = std::make_pair(new Platform(random(100,mWindowWidth/4.0f), 300,random(mWindowWidth/4.0f, mWindowWidth/2.0f)), actor);
-        auto platformActorPair3 = std::make_pair(new Platform(random(100,mWindowWidth/2.0f),500, random(mWindowWidth/4.0f, 3 * (mWindowWidth/4.0f) )), nullptr);
-        
-        platform.emplace_back(platformActorPair1);
-        platform.emplace_back(platformActorPair2);
-        platform.emplace_back(platformActorPair3);
-        
-        
-        
     }
     
     void processEvents();
@@ -172,7 +215,7 @@ private:
     unsigned int mWindowHeight;
     sf::RenderWindow mWindow;
     std::shared_ptr<Character> actor;
-    std::vector<std::pair<std::unique_ptr<Platform>, std::shared_ptr<Character>>> platform;
+    PlatformPool platforms;
 };
 
 const sf::Time App::timePerFrame = sf::seconds(1.f / 60.f);
@@ -189,13 +232,10 @@ void App::processEvents()  {
 
 void App::update(const sf::Time& delta) {
 
-    //actor->update(delta);
-    for(auto& p : platform)
+    actor->update(delta);
+    for(auto& p : platforms.getPlatforms())
     {
-        p.first->update(delta);
-        if(p.second) {
-            p.second->update(delta, p.first.get());
-        }
+        p->update(delta);
     }
 }
 
@@ -205,9 +245,9 @@ void App::render() {
 
     // draw everything here...
     actor->draw(mWindow);
-    for(auto& p : platform)
+    for(auto& p : platforms.getPlatforms())
     {
-        p.first->draw(mWindow);
+        p->draw(mWindow);
     }
     // end the current frame
     mWindow.display();
@@ -237,7 +277,7 @@ void App::run() {
 int main()
 {
     
-    App app(800,600);
+    App app(screenWidth,screenHeight);
     app.run();
 
     return 0;
