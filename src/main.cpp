@@ -58,7 +58,7 @@ public:
         target.draw(mSprite, camera.getTransform());
     }
 
-    float getPlatformHeight() const {
+    float getPlatformYPosition() const {
         return mSprite.getPosition().y;
     }
 
@@ -89,7 +89,7 @@ private:
     void createPlatforms() {
         int i = 1;
         while (platforms.size() <= mSize) {
-            auto lastPlatformPosition = platforms.back()->getPlatformHeight();
+            auto lastPlatformPosition = platforms.back()->getPlatformYPosition();
             auto y =  lastPlatformPosition - (float)random(100,300) ;
             float x;
             if (i % 4 == 1) {
@@ -212,7 +212,8 @@ public:
 
 public:
     static const sf::Time timePerFrame;
-    
+
+
 private:
     unsigned int mWindowWidth;
     unsigned int mWindowHeight;
