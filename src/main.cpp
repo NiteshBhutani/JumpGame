@@ -1,143 +1,11 @@
-#include "SFML/System/Vector2.hpp"
-#include <SFML/Graphics.hpp>
-#include <SFML/System.hpp>
-#include <iostream>
-#include <memory>
-#include <utility>
-#include <random>
-#include <deque>
 #include "Camera.hpp"
+#include "Constants.hpp"
+#include "Platform.hpp"
+#include "PlatformPool.hpp"
 
-std::random_device rd;
-std::mt19937 gen(rd());
- 
-static const unsigned int screenWidth = 800;
-static const unsigned int screenHeight = 600;
+#include <SFML/Graphics.hpp>
 
-float random(int low, int high)
-{
-    std::uniform_int_distribution<> dist(low, high);
-    return (float)dist(gen);
-}
-
-
-
-class Platform {
-public:
-    Platform():
-        mSize(sf::Vector2f(400, 10)),
-        mSprite(),
-        mVelocity(0.0, 0.0f)
-    {
-        mSprite.setPosition(0.0f, 0.0f);
-        mSprite.setSize(mSize);
-        mSprite.setFillColor(sf::Color::Yellow);
-        mSprite.setOutlineColor(sf::Color::Red);
-        mSprite.setOutlineThickness(2);
-    }
-
-    Platform(float width, float y, float x) :
-        mSize(sf::Vector2f(width, 10)),
-        mSprite(),
-        mVelocity(0.0, 0.0f)
-    {
-        mSprite.setPosition(x, y);
-        mSprite.setSize(mSize);
-        mSprite.setFillColor(sf::Color::Yellow);
-        mSprite.setOutlineColor(sf::Color::Red);
-        mSprite.setOutlineThickness(2);
-    }
-
-    void update(const sf::Time& delta) {
-        sf::Vector2f displacement = mVelocity * delta.asSeconds();
-        
-        mSprite.move(displacement);
-    }
-
-    void draw(sf::RenderTarget& target, Camera2D& camera) {
-        target.draw(mSprite, camera.getTransform());
-    }
-
-    float getPlatformYPosition() const {
-        return mSprite.getPosition().y;
-    }
-
-    bool checkPlatformStillInFocus(Camera2D& cam) {
-        auto y = mSprite.getPosition().y + 10;
-
-        auto cameraBottomY = -cam.getPosition().y + screenHeight;
-
-        if(y > cameraBottomY) {
-            return false;
-        }
-        return true;
-    }
-
-private:
-    sf::Vector2f mSize;
-    sf::Vector2f mVelocity;
-    sf::RectangleShape mSprite;
-};
-
-class PlatformPool {
-public:
-    PlatformPool() :
-        mSize(20)
-    {
-        std::unique_ptr<Platform> p1 = std::make_unique<Platform>(random(100,screenWidth/4), screenHeight-100,random(screenWidth/4, screenWidth/2));
-        std::unique_ptr<Platform> p2 = std::make_unique<Platform>(random(100,screenWidth/2), (float)screenHeight/2, random(screenWidth/4, (int)(3*(screenWidth/4.0f)) ));
-
-        platforms.push_back(std::move(p1));
-        platforms.push_back(std::move(p2));
-
-        createPlatforms();
-    }
-    
-    auto& getPlatforms() {
-        return platforms;
-    }
-
-    void releaseFromFront() {
-        if(!platforms.empty()) {
-            platforms.pop_front();
-        }
-    }
-
-    void createPlatforms() {
-        int i = 1;
-        while (platforms.size() < mSize) {
-            auto lastPlatformPosition = platforms.back()->getPlatformYPosition();
-            auto y =  lastPlatformPosition - (float)random(100,300) ;
-            float x;
-            if (i % 4 == 1) {
-                x = random(0, screenWidth/4);
-            }
-            else if (i % 4 == 2) {
-                x = random(screenWidth/4, screenWidth/2);
-            }
-            else if (i % 4 == 3) {
-                x = random(screenWidth/2, (int) (0.625* screenWidth));
-            }
-            else {
-                x = random((int)(0.625 * screenWidth), (int)(0.75 * screenWidth));
-            }
-            float width;
-
-            if (i % 4 == 1 || i % 4 == 3) {
-                width = random(100, screenWidth / 2);
-            }
-            else {
-                width = random(100, screenWidth / 4);
-            }
-            std::unique_ptr<Platform> p = std::make_unique<Platform>(width,y,x);
-            platforms.push_back(std::move(p));
-            i++;
-        }
-    }
-private:
-    size_t mSize;
-    std::deque<std::unique_ptr<Platform>> platforms;
-};
+#include <iostream>
 
 class Character {
 public:
@@ -216,7 +84,8 @@ public:
         mWindow(sf::VideoMode(width,height), "JumpGame"),
         actor(),
         mCameraSpeed(0.0f,0.5f), //Camera is moving up with constant speed (Camera speed is alwys inverse of direction where we want to go)
-        mCamera()
+        mCamera(),
+        mPlatformPool()
     {
         actor = std::make_shared<Character>(sf::Vector2f(width/2.f, height/2.f));
     }
@@ -237,7 +106,7 @@ private:
     sf::Vector2f mCameraSpeed;
     sf::RenderWindow mWindow;
     std::shared_ptr<Character> actor;
-    PlatformPool platforms;
+    PlatformPool mPlatformPool;
     Camera2D mCamera;
 };
 
@@ -255,18 +124,14 @@ void App::processEvents()  {
 
 void App::update(const sf::Time& delta) {
     //check front of platform pool if it is still in focus
-    auto& platforms_ = platforms.getPlatforms();
-    if(!platforms_.empty() && !platforms_.front()->checkPlatformStillInFocus(mCamera)) {
-        std::cout << "Platform size = " << platforms_.size() << std::endl;
-        platforms.releaseFromFront();
-        if(platforms_.size() < 10 ) {
-            // if size of platform pool reduce by certain size and they again make the platforms as per size
-            platforms.createPlatforms();
-        }
+    auto& platforms = mPlatformPool.getPlatforms();
+    if(!platforms.empty() && !platforms.front()->checkPlatformStillInFocus(mCamera)) {
+        std::cout << "Platform size = " << platforms.size() << std::endl;
+        mPlatformPool.releaseFromFront();
     }
 
     actor->update(delta);
-    for(auto& p : platforms.getPlatforms())
+    for(auto& p : mPlatformPool.getPlatforms())
     {
         p->update(delta);
     }
@@ -280,7 +145,7 @@ void App::render() {
 
     // draw everything here...
     actor->draw(mWindow);
-    for(auto& p : platforms.getPlatforms())
+    for(auto& p : mPlatformPool.getPlatforms())
     {
         p->draw(mWindow, mCamera);
     }
