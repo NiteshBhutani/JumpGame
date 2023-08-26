@@ -99,10 +99,10 @@ private:
                 x = random(screenWidth/4, screenWidth/2);
             }
             else if (i % 4 == 3) {
-                x = random(screenWidth/2, (int) (0.75* screenWidth));
+                x = random(screenWidth/2, (int) (0.625* screenWidth));
             }
             else {
-                x = random((int)(0.75 * screenWidth), screenWidth);
+                x = random((int)(0.625 * screenWidth), (int)(0.75 * screenWidth));
             }
             float width;
 
