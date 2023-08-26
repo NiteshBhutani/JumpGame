@@ -4,9 +4,10 @@
 #include <iostream>
 #include <memory>
 #include <utility>
-#include <vector>
 #include <random>
 #include <deque>
+#include "Camera.hpp"
+
 std::random_device rd;
 std::mt19937 gen(rd());
  
@@ -53,8 +54,8 @@ public:
         mSprite.move(displacement);
     }
 
-    void draw(sf::RenderTarget& target) {
-        target.draw(mSprite);
+    void draw(sf::RenderTarget& target, Camera2D& camera) {
+        target.draw(mSprite, camera.getTransform());
     }
 
     float getPlatformHeight() const {
@@ -196,7 +197,9 @@ public:
         mWindowWidth(width),
         mWindowHeight(height),
         mWindow(sf::VideoMode(width,height), "JumpGame"),
-        actor()
+        actor(),
+        mCameraSpeed(0.0f,0.5f), //Camera is moving up with constant speed (Camera speed is alwys inverse of direction where we want to go)
+        mCamera()
     {
         actor = std::make_shared<Character>(sf::Vector2f(width/2.f, height/2.f));
     }
@@ -213,9 +216,11 @@ public:
 private:
     unsigned int mWindowWidth;
     unsigned int mWindowHeight;
+    sf::Vector2f mCameraSpeed;
     sf::RenderWindow mWindow;
     std::shared_ptr<Character> actor;
     PlatformPool platforms;
+    Camera2D mCamera;
 };
 
 const sf::Time App::timePerFrame = sf::seconds(1.f / 60.f);
@@ -237,6 +242,8 @@ void App::update(const sf::Time& delta) {
     {
         p->update(delta);
     }
+
+    mCamera.moveBy(mCameraSpeed);
 }
 
 void App::render() {
@@ -247,7 +254,7 @@ void App::render() {
     actor->draw(mWindow);
     for(auto& p : platforms.getPlatforms())
     {
-        p->draw(mWindow);
+        p->draw(mWindow, mCamera);
     }
     // end the current frame
     mWindow.display();
