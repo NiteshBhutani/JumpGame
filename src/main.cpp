@@ -62,6 +62,17 @@ public:
         return mSprite.getPosition().y;
     }
 
+    bool checkPlatformStillInFocus(Camera2D& cam) {
+        auto y = mSprite.getPosition().y + 10;
+
+        auto cameraBottomY = -cam.getPosition().y + screenHeight;
+
+        if(y > cameraBottomY) {
+            return false;
+        }
+        return true;
+    }
+
 private:
     sf::Vector2f mSize;
     sf::Vector2f mVelocity;
@@ -71,7 +82,7 @@ private:
 class PlatformPool {
 public:
     PlatformPool() :
-        mSize(10)
+        mSize(20)
     {
         std::unique_ptr<Platform> p1 = std::make_unique<Platform>(random(100,screenWidth/4), screenHeight-100,random(screenWidth/4, screenWidth/2));
         std::unique_ptr<Platform> p2 = std::make_unique<Platform>(random(100,screenWidth/2), (float)screenHeight/2, random(screenWidth/4, (int)(3*(screenWidth/4.0f)) ));
@@ -85,10 +96,16 @@ public:
     auto& getPlatforms() {
         return platforms;
     }
-private:
+
+    void releaseFromFront() {
+        if(!platforms.empty()) {
+            platforms.pop_front();
+        }
+    }
+
     void createPlatforms() {
         int i = 1;
-        while (platforms.size() <= mSize) {
+        while (platforms.size() < mSize) {
             auto lastPlatformPosition = platforms.back()->getPlatformYPosition();
             auto y =  lastPlatformPosition - (float)random(100,300) ;
             float x;
@@ -119,7 +136,7 @@ private:
     }
 private:
     size_t mSize;
-    std::deque<std::shared_ptr<Platform>> platforms;
+    std::deque<std::unique_ptr<Platform>> platforms;
 };
 
 class Character {
@@ -237,6 +254,16 @@ void App::processEvents()  {
 }
 
 void App::update(const sf::Time& delta) {
+    //check front of platform pool if it is still in focus
+    auto& platforms_ = platforms.getPlatforms();
+    if(!platforms_.empty() && !platforms_.front()->checkPlatformStillInFocus(mCamera)) {
+        std::cout << "Platform size = " << platforms_.size() << std::endl;
+        platforms.releaseFromFront();
+        if(platforms_.size() < 10 ) {
+            // if size of platform pool reduce by certain size and they again make the platforms as per size
+            platforms.createPlatforms();
+        }
+    }
 
     actor->update(delta);
     for(auto& p : platforms.getPlatforms())

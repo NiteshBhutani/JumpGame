@@ -8,6 +8,7 @@ class Camera2D {
 
         sf::Transform& getTransform();
         void moveBy(sf::Vector2f& delta);
+        sf::Vector2f& getPosition();
     private:
         sf::Vector2f mPos;
         sf::Transform mTransform;
