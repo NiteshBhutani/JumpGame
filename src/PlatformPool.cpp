@@ -21,6 +21,7 @@ std::deque<std::unique_ptr<Platform>>& PlatformPool::getPlatforms() {
 
 void PlatformPool::releaseFromFront() {
     if(!platforms.empty()) {
+        platforms.front().release();
         platforms.pop_front();
     }
 

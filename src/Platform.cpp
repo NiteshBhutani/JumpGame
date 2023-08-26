@@ -1,17 +1,7 @@
 #include "Platform.hpp"
 #include "Constants.hpp"
 
-Platform::Platform():
-    mSize(sf::Vector2f(400, 10)),
-    mSprite(),
-    mVelocity(0.0, 0.0f)
-{
-    mSprite.setPosition(0.0f, 0.0f);
-    mSprite.setSize(mSize);
-    mSprite.setFillColor(sf::Color::Yellow);
-    mSprite.setOutlineColor(sf::Color::Red);
-    mSprite.setOutlineThickness(2);
-}
+
 
 Platform::Platform(float width, float y, float x) :
     mSize(sf::Vector2f(width, 10)),

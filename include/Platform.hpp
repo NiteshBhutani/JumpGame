@@ -5,7 +5,6 @@
 
 class Platform {
 public:
-    Platform();
     Platform(float width, float y, float x);
     void update(const sf::Time& delta);
     void draw(sf::RenderTarget& target, Camera2D& camera);
