@@ -9,7 +9,7 @@ add_subdirectory(externallibs/SFML)
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/build/externallibs/SFML/lib)
 
-add_executable(${PROJECT_NAME} src/main.cpp src/Camera.cpp src/Platform.cpp src/PlatformPool.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/Camera.cpp src/Platform.cpp src/PlatformPool.cpp src/Character.cpp)
 
 if(WIN32)
     set_target_properties(${PROJECT_NAME}
