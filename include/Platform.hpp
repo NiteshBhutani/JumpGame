@@ -9,6 +9,8 @@ public:
     void update(const sf::Time& delta);
     void draw(sf::RenderTarget& target, Camera2D& camera);
     float getPlatformYPosition() const;
+    //[LeftX, RightX]
+    std::pair<float,float> getPlatformXPosition() const;
     bool checkPlatformStillInFocus(Camera2D& cam);
 
 private:

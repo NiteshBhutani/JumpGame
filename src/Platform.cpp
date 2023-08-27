@@ -1,5 +1,6 @@
 #include "Platform.hpp"
 #include "Constants.hpp"
+#include <utility>
 
 
 
@@ -31,6 +32,11 @@ void Platform::draw(sf::RenderTarget& target, Camera2D& camera) {
 float Platform::getPlatformYPosition() const {
 
     return mSprite.getPosition().y;
+}
+
+std::pair<float, float> Platform::getPlatformXPosition() const {
+    auto x = mSprite.getPosition().x;
+    return std::make_pair(x, x+mSize.x);
 }
 
 bool Platform::checkPlatformStillInFocus(Camera2D& cam) {

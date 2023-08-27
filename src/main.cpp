@@ -8,6 +8,7 @@
 
 #include <ios>
 #include <iostream>
+#include <ostream>
 
 class Character {
 public:
@@ -47,11 +48,6 @@ public:
             isJumping = true;
         }
 
-
-        //check collision
-
-
-        // if not jumping rest on platform
         if(!isJumping && mRestingPlatform) {
             mSprite.setPosition(sf::Vector2f(mSprite.getPosition().x, mRestingPlatform->getPlatformYPosition()-53.0f));
         }
@@ -60,6 +56,8 @@ public:
         if(!isJumping) {
             //if not jumping then only character can only move in x-direction
             mVelocity.x = (direction.x * speedRate);
+            mVelocity.y = 0.0f;
+            mDisplacement.y = 0.0f;
             mDisplacement.x = mVelocity.x * delta.asSeconds();
         
         } else {
@@ -72,13 +70,48 @@ public:
         }
 
         mSprite.move(mDisplacement);
-
+    
     }
     
     void draw(sf::RenderTarget& window, Camera2D& camera) {
         window.draw(mSprite, camera.getTransform());
     }
+
+    bool checkCollision(Platform* p) {
+        bool result = false;
+
+        auto charYTop = mSprite.getPosition().y;
+        auto charYBottom = mSprite.getPosition().y + 50;
+        auto charLeftX = mSprite.getPosition().x + 15;
+        auto charRightX = mSprite.getPosition().x + 40;
+
+        if(!p) {
+            //assert
+            return result;
+        }
+
+        auto platformY = p->getPlatformYPosition();
+        auto platformX = p->getPlatformXPosition();
+
+        //std::cout << "CharY = " << charYBottom << " CharLeftX " << charLeftX << " charRightX " << charRightX << std::endl;
+        //std::cout << "platformY = " << platformY << " platformLeftX " << platformX.first << " PlatformRightX " << platformX.second << std::endl;
+        
+        if(charYTop < platformY && charYBottom >= platformY && charLeftX >= platformX.first && charRightX <= platformX.second) {
+            return true;
+        }
+        return result;
+    }
     
+    void updatePlatform(Platform* p) {
+        mRestingPlatform = p;
+        isJumping = false;
+        jumpInitialVelocity = {0.0f, 0.0f};
+        
+    }
+
+    bool shouldCheckForCollision() {
+        return isJumping && jumpInitialVelocity.y >= 0;
+    }
 public:
     static const float speedRate;
     static const float gravityRate;
@@ -119,6 +152,7 @@ public:
     void run();
     void render();
 
+    void checkCollisionWithPlatforms();
 
 public:
     static const sf::Time timePerFrame;
@@ -146,12 +180,32 @@ void App::processEvents()  {
     }
 }
 
+void App::checkCollisionWithPlatforms() {
+    
+    Platform* lastCollidedPlatform = nullptr;
+    
+    if(!actor->shouldCheckForCollision()) return;
+    
+    for(auto& p : mPlatformPool.getPlatforms())
+    {
+        if(actor->checkCollision(p.get())) {
+            lastCollidedPlatform = p.get();
+        }
+    }
+    if(lastCollidedPlatform) {
+        actor->updatePlatform(lastCollidedPlatform);
+    }
+}
+
 void App::update(const sf::Time& delta) {
     //check front of platform pool if it is still in focus
     auto& platforms = mPlatformPool.getPlatforms();
     if(!platforms.empty() && !platforms.front()->checkPlatformStillInFocus(mCamera)) {
         mPlatformPool.releaseFromFront();
     }
+
+    //check collision
+    this->checkCollisionWithPlatforms();
 
     actor->update(delta);
     for(auto& p : mPlatformPool.getPlatforms())
