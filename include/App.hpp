@@ -6,17 +6,7 @@
 
 class App {
 public:
-    App(unsigned int width, unsigned int height):
-        mWindowWidth(width),
-        mWindowHeight(height),
-        mWindow(sf::VideoMode(width,height), "JumpGame"),
-        actor(),
-        mCameraSpeed(0.0f,0.5f), //Camera is moving up with constant speed (Camera speed is alwys inverse of direction where we want to go)
-        mCamera(),
-        mPlatformPool()
-    {
-        actor = std::make_shared<Character>(sf::Vector2f(width/2.f, height/2.f), mPlatformPool.getPlatforms().front().get());
-    }
+    App(unsigned int width, unsigned int height);
     
     void processEvents();
     void update(const sf::Time& delta);
