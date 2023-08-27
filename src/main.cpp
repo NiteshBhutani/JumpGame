@@ -77,6 +77,11 @@ public:
         window.draw(mSprite, camera.getTransform());
     }
 
+    ////////////////////////////
+    // TODO : Improve collision detection 
+    // Issues : sporadically box can jump tp platform above it, if its too clode
+    // Issues : If box is half inside the platform, this algorithm doesn't catch that
+    ///////////////////////////
     bool checkCollision(Platform* p) {
         bool result = false;
 
