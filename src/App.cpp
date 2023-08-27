@@ -1,4 +1,5 @@
 #include "App.hpp"
+#include "Constants.hpp"
 
 const sf::Time App::timePerFrame = sf::seconds(1.f / 60.f);
 
@@ -11,8 +12,11 @@ App::App(unsigned int width, unsigned int height):
     mCamera(),
     mPlatformPool()
 {
-    
-    actor = std::make_shared<Character>(sf::Vector2f(width/2.f, height/2.f), mPlatformPool.getPlatforms().front().get());
+    auto initialRestingPlatform = mPlatformPool.getPlatforms().front().get();
+    auto platformX = initialRestingPlatform->getPlatformXPosition();
+    auto x = random(platformX.first, platformX.second);
+    auto y = initialRestingPlatform->getPlatformYPosition();
+    actor = std::make_shared<Character>(sf::Vector2f(x,y), initialRestingPlatform);
 
 }
 
