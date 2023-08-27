@@ -41,10 +41,6 @@ void Character::update(const sf::Time& delta)
         isJumping = true;
     }
 
-    //if(!isJumping && mRestingPlatform) {
-    //    mSprite.setPosition(sf::Vector2f(mSprite.getPosition().x, mRestingPlatform->getPlatformYPosition()-53.0f));
-    //}
-    
     // jump physics
     if(!isJumping) {
         //if not jumping then only character can only move in x-direction
@@ -52,6 +48,16 @@ void Character::update(const sf::Time& delta)
         mVelocity.y = 0.0f;
         mDisplacement.y = 0.0f;
         mDisplacement.x = mVelocity.x * delta.asSeconds();
+
+        //check character doesn't leave right side of platform
+        if (mSprite.getPosition().x + 50.0f + mDisplacement.x > mRestingPlatform->getPlatformXPosition().second) {
+            mDisplacement.x = mRestingPlatform->getPlatformXPosition().second - (mSprite.getPosition().x + 50.0f);
+        }
+
+        //check character doesn't leave left side of platform
+        if (mSprite.getPosition().x + mDisplacement.x < mRestingPlatform->getPlatformXPosition().first) {
+            mDisplacement.x = mRestingPlatform->getPlatformXPosition().first - (mSprite.getPosition().x);
+        }
     
     } else {
         // while jumping character can move both in x/y direction
