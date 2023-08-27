@@ -22,10 +22,6 @@ Character::Character(const sf::Vector2f& pos, Platform* p) :
     mSprite.setOutlineColor(sf::Color::Blue);
     mSprite.setOutlineThickness(3);
     mSprite.setSize(sf::Vector2f(50, 50));
-
-    if(!isJumping && mRestingPlatform) {
-        mSprite.setPosition(sf::Vector2f(mSprite.getPosition().x, mRestingPlatform->getPlatformYPosition()-50.0f));
-    }
 }
 
 void Character::update(const sf::Time& delta)
@@ -45,9 +41,9 @@ void Character::update(const sf::Time& delta)
         isJumping = true;
     }
 
-    if(!isJumping && mRestingPlatform) {
-        mSprite.setPosition(sf::Vector2f(mSprite.getPosition().x, mRestingPlatform->getPlatformYPosition()-53.0f));
-    }
+    //if(!isJumping && mRestingPlatform) {
+    //    mSprite.setPosition(sf::Vector2f(mSprite.getPosition().x, mRestingPlatform->getPlatformYPosition()-53.0f));
+    //}
     
     // jump physics
     if(!isJumping) {
@@ -91,22 +87,27 @@ bool Character::checkCollision(Platform* p) {
     auto platformYTop = p->getPlatformYPosition();
     auto platformYBottom = p->getPlatformYPosition() + 10.0f;
     
-    if(charYBottom < platformYTop || charYBottom > platformYBottom) {
-        return false;
-    }
-    
     auto charXMid = mSprite.getPosition().x + 25.0f;
     auto platformX = p->getPlatformXPosition();
 
+    //std::cout << "Char Y Bottom = " << charYBottom << " Char Mid = " << charXMid << std::endl;
+    //std::cout << "Platform Y Top = " << platformYTop << " Platform Y Bottom = " << platformYBottom << std::endl;
+    //std::cout << "Platform X Left = " << platformX.first << "Platform X Right = " << platformX.second << std::endl;
+
+    // Here 2.5 is margin of error. There can be cases in which position sample are more than 10 units apart. For those cases, a 2.5 units
+    // margin of error is added. Therefor check will between platformTop and platformBottom + 2.5. If box positon lies in bettween this then 
+    // its a collision
+    if(charYBottom < platformYTop || charYBottom  > platformYBottom + 2.5 ) {
+        return false;
+    }
+    
+    
     
     if(charXMid < platformX.first || charXMid > platformX.second) {
         return false;
     }
 
-    // std::cout << "Char Y Bottom = " << charYBottom << " Char Mid = " << charXMid << std::endl;
-    // std::cout << "Platform Y Top = " << platformYTop << " Platform Y Bottom = " << platformYBottom << std::endl;
-    // std::cout << "Platform X Left = " << platformX.first << "Platform X Right = " << platformX.second << std::endl;
-
+    
     return result;
 }
     
@@ -114,6 +115,7 @@ void Character::updateRestingPlatform(Platform* p) {
     mRestingPlatform = p;
     isJumping = false;
     jumpInitialVelocity = {0.0f, 0.0f};
+    mSprite.setPosition(sf::Vector2f(mSprite.getPosition().x, mRestingPlatform->getPlatformYPosition()-53.0f));
     
 }
 

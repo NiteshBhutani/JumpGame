@@ -5,7 +5,7 @@
 
 
 Platform::Platform(float width, float y, float x) :
-    mSize(sf::Vector2f(width, 10)),
+    mSize(sf::Vector2f(width, 10.0f)),
     mSprite(),
     mVelocity(0.0, 0.0f)
 {

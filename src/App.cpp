@@ -14,8 +14,8 @@ App::App(unsigned int width, unsigned int height):
 {
     auto initialRestingPlatform = mPlatformPool.getPlatforms().front().get();
     auto platformX = initialRestingPlatform->getPlatformXPosition();
-    auto x = random(platformX.first, platformX.second);
-    auto y = initialRestingPlatform->getPlatformYPosition();
+    auto x = (float) random(platformX.first, platformX.second);
+    auto y = initialRestingPlatform->getPlatformYPosition() - 53.0f;
     actor = std::make_shared<Character>(sf::Vector2f(x,y), initialRestingPlatform);
 
 }
@@ -36,7 +36,7 @@ void App::checkCollisionWithPlatforms() {
     
     if(!actor->shouldCheckForCollision()) return;
     
-    for(auto& p : mPlatformPool.getPlatforms())
+    for (auto& p : mPlatformPool.getPlatforms())
     {
         if(actor->checkCollision(p.get())) {
             lastCollidedPlatform = p.get();
