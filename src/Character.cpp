@@ -1,4 +1,5 @@
 #include "Character.hpp"
+#include <iostream>
 
 const float Character::speedRate = 150;
 const float Character::gravityRate = 100;
@@ -70,33 +71,39 @@ void Character::draw(sf::RenderTarget& window, Camera2D& camera) {
     window.draw(mSprite, camera.getTransform());
 }
 
-////////////////////////////
-// TODO : Improve collision detection 
-// Issues : sporadically box can jump tp platform above it, if its too clode
-// Issues : If box is half inside the platform, this algorithm doesn't catch that
-///////////////////////////
+////////////////////////////////////////
+// This is not AABB collision. In this 
+// we check whether box bottom line is within 
+// platform Height and box mid in x direction is within 
+// platform width. 
 bool Character::checkCollision(Platform* p) {
-    bool result = false;
-
-    auto charYTop = mSprite.getPosition().y;
-    auto charYBottom = mSprite.getPosition().y + 50;
-    auto charLeftX = mSprite.getPosition().x + 15;
-    auto charRightX = mSprite.getPosition().x + 40;
-
     if(!p) {
         //assert
-        return result;
+        return false;
     }
 
-    auto platformY = p->getPlatformYPosition();
+    bool result = true;
+
+    auto charYBottom = mSprite.getPosition().y + 50.0f;
+    auto platformYTop = p->getPlatformYPosition();
+    auto platformYBottom = p->getPlatformYPosition() + 10.0f;
+    
+    if(charYBottom < platformYTop || charYBottom > platformYBottom) {
+        return false;
+    }
+    
+    auto charXMid = mSprite.getPosition().x + 25.0f;
     auto platformX = p->getPlatformXPosition();
 
-    //std::cout << "CharY = " << charYBottom << " CharLeftX " << charLeftX << " charRightX " << charRightX << std::endl;
-    //std::cout << "platformY = " << platformY << " platformLeftX " << platformX.first << " PlatformRightX " << platformX.second << std::endl;
     
-    if(charYTop < platformY && charYBottom >= platformY && charLeftX >= platformX.first && charRightX <= platformX.second) {
-        return true;
+    if(charXMid < platformX.first || charXMid > platformX.second) {
+        return false;
     }
+
+    // std::cout << "Char Y Bottom = " << charYBottom << " Char Mid = " << charXMid << std::endl;
+    // std::cout << "Platform Y Top = " << platformYTop << " Platform Y Bottom = " << platformYBottom << std::endl;
+    // std::cout << "Platform X Left = " << platformX.first << "Platform X Right = " << platformX.second << std::endl;
+
     return result;
 }
     

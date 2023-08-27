@@ -8,11 +8,7 @@ public:
 
     void update(const sf::Time& delta);
     void draw(sf::RenderTarget& window, Camera2D& camera);
-    ////////////////////////////
-    // TODO : Improve collision detection 
-    // Issues : sporadically box can jump tp platform above it, if its too clode
-    // Issues : If box is half inside the platform, this algorithm doesn't catch that
-    ///////////////////////////
+    
     bool checkCollision(Platform* p);
     void updateRestingPlatform(Platform* p);
     bool shouldCheckForCollision();
