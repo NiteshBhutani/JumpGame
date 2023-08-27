@@ -1,4 +1,4 @@
-#include "Charater.hpp"
+#include "Character.hpp"
 
 const float Character::speedRate = 150;
 const float Character::gravityRate = 100;
