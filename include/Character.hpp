@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Camera.hpp"
 #include "Platform.hpp"
 
 class Character {
@@ -12,6 +13,8 @@ public:
     bool checkCollision(Platform* p);
     void updateRestingPlatform(Platform* p);
     bool shouldCheckForCollision();
+
+    bool outOfGame(Camera2D& camera);
 
 public:
     static const float speedRate;

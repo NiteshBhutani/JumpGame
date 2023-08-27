@@ -48,6 +48,12 @@ void App::checkCollisionWithPlatforms() {
 }
 
 void App::update(const sf::Time& delta) {
+
+    //if actor of game then quit
+    if(actor->outOfGame(mCamera)) {
+        mWindow.close(); 
+    }
+
     //check front of platform pool if it is still in focus
     auto& platforms = mPlatformPool.getPlatforms();
     if(!platforms.empty() && !platforms.front()->checkPlatformStillInFocus(mCamera)) {

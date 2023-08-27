@@ -40,7 +40,7 @@ std::pair<float, float> Platform::getPlatformXPosition() const {
 }
 
 bool Platform::checkPlatformStillInFocus(Camera2D& cam) {
-    auto y = mSprite.getPosition().y + 10;
+    auto y = mSprite.getPosition().y  - 100.0f; //we will wait for platform to go 100 units more below before destroying
 
     auto cameraBottomY = -cam.getPosition().y + screenHeight;
 

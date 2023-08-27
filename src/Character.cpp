@@ -1,5 +1,8 @@
 #include "Character.hpp"
+#include "Camera.hpp"
+#include "Constants.hpp"
 #include <iostream>
+
 
 const float Character::speedRate = 150;
 const float Character::gravityRate = 100;
@@ -116,4 +119,15 @@ void Character::updateRestingPlatform(Platform* p) {
 
 bool Character::shouldCheckForCollision() {
     return isJumping && jumpInitialVelocity.y >= 0;
+}
+
+bool Character::outOfGame(Camera2D& camera) {
+
+    auto cameraBottomPos = -camera.getPosition().y + screenHeight;
+    auto y = mSprite.getPosition().y;
+    if(y - screenHeight > cameraBottomPos) { // we will wait for box to go screenHeight units below before quiting
+        return true;
+    }
+
+    return false;
 }
