@@ -4,16 +4,21 @@
 #include "Platform.hpp"
 
 
-enum class RunDirection { Left, Right};
+enum class Direction { Left, Right};
+enum class Movement { Idle, Run, Jump, Fall};
+
 class Animation {
 public:
-    Animation(std::string name,int width, int height, int numFrames) :
+    Animation() :
         mTimeSinceLastFrame(sf::Time::Zero),
         mTexture(),
         currentTextRect(0),
-        currentRunDir(RunDirection::Right)
+        currentRunDir(Direction::Right)
+    {}
+
+    void setup(std::string name, int x, int y, int width, int height, int numFrames) 
     {
-        if (!mTexture.loadFromFile("../assets/Run.png")) {
+        if (!mTexture.loadFromFile(name)) {
         //Handle error
         }
         for (int i = 0; i < numFrames; i++) {
@@ -37,7 +42,7 @@ public:
         }
     }
 
-    void applyTexture(sf::Sprite& sp, RunDirection dir) {
+    void applyTexture(sf::Sprite& sp, Direction dir) {
         if(currentRunDir != dir) {
             currentRunDir = dir;
             sp.scale(-1.0, 1.0f);
@@ -54,7 +59,7 @@ private:
     sf::Texture mTexture;
     std::vector<sf::IntRect> frames;
     int currentTextRect;
-    RunDirection currentRunDir;
+    Direction currentRunDir;
 
 };
 
@@ -80,8 +85,9 @@ public:
 
 private:
     sf::Sprite mSprite;
-    Animation mSpriteTexture;
-    RunDirection mRunDir;
+    Animation mTextures[4];
+    Direction mDirection;
+    Movement mMovement;
     sf::Vector2f mDisplacement;
     sf::Vector2f mVelocity;
     

@@ -17,25 +17,40 @@ Character::Character(const sf::Vector2f& pos, Platform* p) :
     jumpInitialVelocity(0.0f, 0.0f),
     isJumping(false),
     mRestingPlatform(p),
-    mSpriteTexture("", 80, 80, 8),
-    mRunDir(RunDirection::Right)
+    mTextures(),
+    mDirection(Direction::Right),
+    mMovement(Movement::Idle)
 {
     mSprite.setPosition(pos);
     mSprite.setOrigin(40.0f, 40.0f);
+
+    std::string idleSprite = "../assets/Idle.png";
+    std::string runSprite = "../assets/Run.png";
+    std::string jumpSprite = "../assets/Jump.png";
+    
+    mTextures[(int)Movement::Idle].setup(idleSprite, 0, 0, 80, 80, 5);
+    mTextures[(int)Movement::Run].setup(runSprite, 0, 0, 80, 80, 8);
+    mTextures[(int)Movement::Jump].setup(jumpSprite, 0, 120, 80, 80, 1);
+    mTextures[(int)Movement::Fall].setup(jumpSprite, 0, 200, 80, 80, 1);
+    
 }
 
 void Character::update(const sf::Time& delta)
 {
+    mMovement = Movement::Idle;
+    mDirection = Direction::Right;
     // process input
     sf::Vector2f direction = { 0.0, 0.0 };
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
         direction.x += 1.0f;
-        mRunDir = RunDirection::Right;
+        mMovement = Movement::Run;
+        mDirection = Direction::Right;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
         direction.x += -1.0f;
-        mRunDir = RunDirection::Left;
+        mMovement = Movement::Run;
+        mDirection = Direction::Left;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && !isJumping) {
@@ -70,9 +85,17 @@ void Character::update(const sf::Time& delta)
         jumpInitialVelocity.y = mVelocity.y;
     }
 
-    mSpriteTexture.update(delta);
-    mSpriteTexture.applyTexture(mSprite, mRunDir);
+    if(isJumping) {
+        if(mVelocity.y >= 0) {
+            mMovement = Movement::Fall;
+        } else {
+            mMovement = Movement::Jump;
+        }
+    }
 
+    mTextures[(int)mMovement].update(delta);
+    mTextures[(int)mMovement].applyTexture(mSprite, mDirection);
+    
     mSprite.move(mDisplacement);
 
     

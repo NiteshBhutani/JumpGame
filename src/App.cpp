@@ -69,7 +69,7 @@ void App::update(const sf::Time& delta) {
         p->update(delta);
     }
 
-    //mCamera.moveBy(mCameraSpeed);
+    mCamera.moveBy(mCameraSpeed);
 }
 
 void App::render() {
