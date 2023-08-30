@@ -7,6 +7,7 @@
 const float Character::speedRate = 150;
 const float Character::gravityRate = 100;
 const float Character::gravity = 9.8f;
+sf::Time Animation::holdTime = sf::seconds(0.05f);
 
 
 Character::Character(const sf::Vector2f& pos, Platform* p) :
@@ -15,13 +16,11 @@ Character::Character(const sf::Vector2f& pos, Platform* p) :
     mDisplacement(0.0f,0.0f),
     jumpInitialVelocity(0.0f, 0.0f),
     isJumping(false),
-    mRestingPlatform(p)
+    mRestingPlatform(p),
+    mSpriteTexture("", 80, 80, 8),
+    mRunDir(RunDirection::Right)
 {
     mSprite.setPosition(pos);
-    mSprite.setFillColor(sf::Color::White);
-    mSprite.setOutlineColor(sf::Color::Blue);
-    mSprite.setOutlineThickness(3);
-    mSprite.setSize(sf::Vector2f(50, 50));
 }
 
 void Character::update(const sf::Time& delta)
@@ -30,14 +29,16 @@ void Character::update(const sf::Time& delta)
     sf::Vector2f direction = { 0.0, 0.0 };
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
         direction.x += 1.0f;
+        mRunDir = RunDirection::Right;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
         direction.x += -1.0f;
+        mRunDir = RunDirection::Left;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && !isJumping) {
-        jumpInitialVelocity = { direction.x * speedRate , -800.0f };
+        jumpInitialVelocity = { direction.x * speedRate , -600.0f };
         isJumping = true;
     }
 
@@ -68,8 +69,12 @@ void Character::update(const sf::Time& delta)
         jumpInitialVelocity.y = mVelocity.y;
     }
 
+    mSpriteTexture.update(delta);
+    mSpriteTexture.applyTexture(mSprite, mRunDir);
+
     mSprite.move(mDisplacement);
 
+    
 }
     
 void Character::draw(sf::RenderTarget& window, Camera2D& camera) {

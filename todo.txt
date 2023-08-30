@@ -1,5 +1,5 @@
 -- Add character and animation of jumping instead of box.
 -- Add score entity on top right corner
 -- End game when box is down certain position - done
--- Fix how much box can travel in x-direction when on platform
+-- Fix how much box can travel in x-direction when on platform - done
 -- Once jumped box cannot return to same platform - fix this behavior - done
