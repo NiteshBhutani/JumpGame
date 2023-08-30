@@ -21,6 +21,7 @@ Character::Character(const sf::Vector2f& pos, Platform* p) :
     mRunDir(RunDirection::Right)
 {
     mSprite.setPosition(pos);
+    mSprite.setOrigin(40.0f, 40.0f);
 }
 
 void Character::update(const sf::Time& delta)
@@ -38,7 +39,7 @@ void Character::update(const sf::Time& delta)
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && !isJumping) {
-        jumpInitialVelocity = { direction.x * speedRate , -600.0f };
+        jumpInitialVelocity = { direction.x * speedRate , -800.0f };
         isJumping = true;
     }
 
