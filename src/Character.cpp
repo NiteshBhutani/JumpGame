@@ -24,21 +24,27 @@ Character::Character(const sf::Vector2f& pos, Platform* p) :
     mSprite.setPosition(pos);
     mSprite.setOrigin(40.0f, 40.0f);
 
-    std::string idleSprite = "../assets/Idle.png";
-    std::string runSprite = "../assets/Run.png";
-    std::string jumpSprite = "../assets/Jump.png";
+    std::string idleRightSprite = "../assets/IdleRight.png";
+    std::string runRightSprite = "../assets/RunRight.png";
+    std::string jumpRightSprite = "../assets/JumpRight.png";
+    std::string idleLeftSprite = "../assets/IdleLeft.png";
+    std::string runLeftSprite = "../assets/RunLeft.png";
+    std::string jumpLeftSprite = "../assets/JumpLeft.png";
     
-    mTextures[(int)Movement::Idle].setup(idleSprite, 0, 0, 80, 80, 5);
-    mTextures[(int)Movement::Run].setup(runSprite, 0, 0, 80, 80, 8);
-    mTextures[(int)Movement::Jump].setup(jumpSprite, 0, 120, 80, 80, 1);
-    mTextures[(int)Movement::Fall].setup(jumpSprite, 0, 200, 80, 80, 1);
+    mTextures[(int)Movement::Idle][(int)Direction::Left].setup(idleLeftSprite, 0, 0, 80, 80, 5);
+    mTextures[(int)Movement::Idle][(int)Direction::Right].setup(idleRightSprite, 0, 0, 80, 80, 5);
+    mTextures[(int)Movement::Run][(int)Direction::Left].setup(runLeftSprite, 0, 0, 80, 80, 8);
+    mTextures[(int)Movement::Run][(int)Direction::Right].setup(runRightSprite, 0, 0, 80, 80, 8);
+    mTextures[(int)Movement::Jump][(int)Direction::Left].setup(jumpLeftSprite, 0, 160, 80, 80, 1);
+    mTextures[(int)Movement::Jump][(int)Direction::Right].setup(jumpRightSprite, 0, 120, 80, 80, 1);
+    mTextures[(int)Movement::Fall][(int)Direction::Left].setup(jumpLeftSprite, 0, 200, 80, 80, 1);
+    mTextures[(int)Movement::Fall][(int)Direction::Right].setup(jumpRightSprite, 0, 40, 80, 80, 1);
     
 }
 
 void Character::update(const sf::Time& delta)
 {
     mMovement = Movement::Idle;
-    mDirection = Direction::Right;
     // process input
     sf::Vector2f direction = { 0.0, 0.0 };
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
@@ -95,8 +101,8 @@ void Character::update(const sf::Time& delta)
         }
     }
 
-    mTextures[(int)mMovement].update(delta);
-    mTextures[(int)mMovement].applyTexture(mSprite, mDirection);
+    mTextures[(int)mMovement][(int)mDirection].update(delta);
+    mTextures[(int)mMovement][(int)mDirection].applyTexture(mSprite, mDirection);
     
     mSprite.move(mDisplacement);
 
@@ -169,4 +175,47 @@ bool Character::outOfGame(Camera2D& camera) {
     }
 
     return false;
+}
+
+
+//constructor
+Animation::Animation() :
+    mTimeSinceLastFrame(sf::Time::Zero),
+    mTexture(),
+    currentTextRect(0),
+    currentRunDir(Direction::Right)
+{}
+
+void Animation::setup(std::string name, int x, int y, int width, int height, int numFrames) 
+{
+    if (!mTexture.loadFromFile(name)) {
+        //Handle error
+        std::cout << "Failed to load texture";
+    }
+    for (int i = 0; i < numFrames; i++) {
+        frames.push_back(sf::IntRect(i * width, 0, width, height));
+    }
+
+}
+
+void Animation::update(sf::Time delta) {
+    mTimeSinceLastFrame += delta;
+    while (mTimeSinceLastFrame >= holdTime) {
+        mTimeSinceLastFrame -= holdTime;
+        step();
+    }
+}
+
+void Animation::step() {
+    currentTextRect++;
+    if (currentTextRect >= frames.size()) {
+        currentTextRect = 0;
+    }
+}
+
+void Animation::applyTexture(sf::Sprite& sp, Direction dir) {
+    
+    sp.setTexture(mTexture);
+    sp.setTextureRect(frames[currentTextRect]);
+    
 }

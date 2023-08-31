@@ -3,54 +3,20 @@
 #include "Camera.hpp"
 #include "Platform.hpp"
 
+#include <iostream>
 
 enum class Direction { Left, Right};
 enum class Movement { Idle, Run, Jump, Fall};
 
 class Animation {
 public:
-    Animation() :
-        mTimeSinceLastFrame(sf::Time::Zero),
-        mTexture(),
-        currentTextRect(0),
-        currentRunDir(Direction::Right)
-    {}
+    Animation();
 
-    void setup(std::string name, int x, int y, int width, int height, int numFrames) 
-    {
-        if (!mTexture.loadFromFile(name)) {
-        //Handle error
-        }
-        for (int i = 0; i < numFrames; i++) {
-            frames.push_back(sf::IntRect(i * width, 0, width, height));
-        }
+    void setup(std::string name, int x, int y, int width, int height, int numFrames) ;
+    void update(sf::Time delta);
+    void step();
+    void applyTexture(sf::Sprite& sp, Direction dir) ;
 
-    }
-
-    void update(sf::Time delta) {
-        mTimeSinceLastFrame += delta;
-        while (mTimeSinceLastFrame >= holdTime) {
-            mTimeSinceLastFrame -= holdTime;
-            step();
-        }
-    }
-
-    void step() {
-        currentTextRect++;
-        if (currentTextRect >= frames.size()) {
-            currentTextRect = 0;
-        }
-    }
-
-    void applyTexture(sf::Sprite& sp, Direction dir) {
-        if(currentRunDir != dir) {
-            currentRunDir = dir;
-            sp.scale(-1.0, 1.0f);
-        }
-        sp.setTexture(mTexture);
-        sp.setTextureRect(frames[currentTextRect]);
-        
-    }
 public:
     static sf::Time holdTime;
     
@@ -85,7 +51,8 @@ public:
 
 private:
     sf::Sprite mSprite;
-    Animation mTextures[4];
+    // Row represent movement and column direction. So [Run][Left] or [Run][Right]
+    Animation mTextures[4][2];
     Direction mDirection;
     Movement mMovement;
     sf::Vector2f mDisplacement;
