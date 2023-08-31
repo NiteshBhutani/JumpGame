@@ -15,7 +15,7 @@ App::App(unsigned int width, unsigned int height):
     auto initialRestingPlatform = mPlatformPool.getPlatforms().front().get();
     auto platformX = initialRestingPlatform->getPlatformXPosition();
     auto x = (float) random((int)platformX.first, (int)platformX.second);
-    auto y = initialRestingPlatform->getPlatformYPosition() - 53.0f;
+    auto y = initialRestingPlatform->getPlatformYPosition() - 28.0f;
     actor = std::make_shared<Character>(sf::Vector2f(x,y), initialRestingPlatform);
 
 }
@@ -69,7 +69,7 @@ void App::update(const sf::Time& delta) {
         p->update(delta);
     }
 
-    //mCamera.moveBy(mCameraSpeed);
+    mCamera.moveBy(mCameraSpeed);
 }
 
 void App::render() {

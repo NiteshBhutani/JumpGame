@@ -2,5 +2,7 @@
 -- Add score entity on top right corner
 -- End game when box is down certain position - done
 -- Fix how much box can travel in x-direction when on platform - done
--- Once jumped box cannot return to same platform - fix this behavior - done
+-- Once jumped box cannot return to same platform - fix this behavior - The reason this is happening is because as time increase  position between each time step is greater than
+																		height(10 units) becuase of acceleration. Correct solution will be if displacement is greater than 10 uints then
+																		linear interpolation to see if botton part of character passes the platform
 -- Fix all the dimension and put it constants.hpp

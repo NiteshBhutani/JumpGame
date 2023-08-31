@@ -22,23 +22,25 @@ Character::Character(const sf::Vector2f& pos, Platform* p) :
     mMovement(Movement::Idle)
 {
     mSprite.setPosition(pos);
-    mSprite.setOrigin(40.0f, 40.0f);
+    mSprite.setOrigin(25.0f, 25.0f);
 
     std::string idleRightSprite = "../assets/IdleRight.png";
     std::string runRightSprite = "../assets/RunRight.png";
     std::string jumpRightSprite = "../assets/JumpRight.png";
+    std::string fallRightSprite = "../assets/FallRight.png";
     std::string idleLeftSprite = "../assets/IdleLeft.png";
     std::string runLeftSprite = "../assets/RunLeft.png";
     std::string jumpLeftSprite = "../assets/JumpLeft.png";
+    std::string fallLeftSprite = "../assets/FallLeft.png";
     
-    mTextures[(int)Movement::Idle][(int)Direction::Left].setup(idleLeftSprite, 0, 0, 80, 80, 5);
-    mTextures[(int)Movement::Idle][(int)Direction::Right].setup(idleRightSprite, 0, 0, 80, 80, 5);
-    mTextures[(int)Movement::Run][(int)Direction::Left].setup(runLeftSprite, 0, 0, 80, 80, 8);
-    mTextures[(int)Movement::Run][(int)Direction::Right].setup(runRightSprite, 0, 0, 80, 80, 8);
-    mTextures[(int)Movement::Jump][(int)Direction::Left].setup(jumpLeftSprite, 0, 160, 80, 80, 1);
-    mTextures[(int)Movement::Jump][(int)Direction::Right].setup(jumpRightSprite, 0, 120, 80, 80, 1);
-    mTextures[(int)Movement::Fall][(int)Direction::Left].setup(jumpLeftSprite, 0, 200, 80, 80, 1);
-    mTextures[(int)Movement::Fall][(int)Direction::Right].setup(jumpRightSprite, 0, 40, 80, 80, 1);
+    mTextures[(int)Movement::Idle][(int)Direction::Left].setup(idleLeftSprite, 0, 0, 50, 50, 5);
+    mTextures[(int)Movement::Idle][(int)Direction::Right].setup(idleRightSprite, 0, 0, 50, 50, 5);
+    mTextures[(int)Movement::Run][(int)Direction::Left].setup(runLeftSprite, 0, 0, 50, 50, 8);
+    mTextures[(int)Movement::Run][(int)Direction::Right].setup(runRightSprite, 0, 0, 50, 50, 8);
+    mTextures[(int)Movement::Jump][(int)Direction::Left].setup(jumpLeftSprite, 0, 0, 50, 70, 1);
+    mTextures[(int)Movement::Jump][(int)Direction::Right].setup(jumpRightSprite, 0, 0, 50, 50, 1);
+    mTextures[(int)Movement::Fall][(int)Direction::Left].setup(fallLeftSprite, 0, 0, 50, 50, 2);
+    mTextures[(int)Movement::Fall][(int)Direction::Right].setup(fallRightSprite, 0, 0, 50, 50, 2);
     
 }
 
@@ -73,8 +75,8 @@ void Character::update(const sf::Time& delta)
         mDisplacement.x = mVelocity.x * delta.asSeconds();
 
         //check character doesn't leave right side of platform
-        if (mSprite.getPosition().x + 50.0f + mDisplacement.x > mRestingPlatform->getPlatformXPosition().second) {
-            mDisplacement.x = mRestingPlatform->getPlatformXPosition().second - (mSprite.getPosition().x + 50.0f);
+        if (mSprite.getPosition().x + mDisplacement.x > mRestingPlatform->getPlatformXPosition().second) {
+            mDisplacement.x = mRestingPlatform->getPlatformXPosition().second - (mSprite.getPosition().x);
         }
 
         //check character doesn't leave left side of platform
@@ -126,7 +128,7 @@ bool Character::checkCollision(Platform* p) {
 
     bool result = true;
 
-    auto charYBottom = mSprite.getPosition().y + 50.0f;
+    auto charYBottom = mSprite.getPosition().y + 25.0f;
     auto platformYTop = p->getPlatformYPosition();
     auto platformYBottom = p->getPlatformYPosition() + 10.0f;
     
@@ -158,7 +160,7 @@ void Character::updateRestingPlatform(Platform* p) {
     mRestingPlatform = p;
     isJumping = false;
     jumpInitialVelocity = {0.0f, 0.0f};
-    mSprite.setPosition(sf::Vector2f(mSprite.getPosition().x, mRestingPlatform->getPlatformYPosition()-53.0f));
+    mSprite.setPosition(sf::Vector2f(mSprite.getPosition().x, mRestingPlatform->getPlatformYPosition()-28.0f));
     
 }
 
