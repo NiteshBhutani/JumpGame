@@ -45,8 +45,6 @@ public:
 
     
 public:
-    static const float speedRate;
-    static const float gravityRate;
     static const float gravity;
 
 private:

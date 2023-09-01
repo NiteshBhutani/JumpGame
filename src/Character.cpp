@@ -49,8 +49,7 @@ namespace {
         return result;
     }
 }
-const float Character::speedRate = 150;
-const float Character::gravityRate = 100;
+
 const float Character::gravity = 9.8f;
 sf::Time Animation::holdTime = sf::seconds(0.05f);
 
@@ -107,14 +106,14 @@ void Character::update(const sf::Time& delta)
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && !isJumping) {
-        jumpInitialVelocity = { 0.0f , -800.0f };
+        jumpInitialVelocity = { 0.0f , -8.0f * pixelPerMeter }; // inital up speed on -8m/s
         isJumping = true;
     }
 
     // jump physics
     if(!isJumping) {
         //if not jumping then only character can only move in x-direction
-        mVelocity.x = (direction.x * speedRate);
+        mVelocity.x = (direction.x * pixelPerMeter);//vel.x = 2m/s * direction
         mVelocity.y = 0.0f;
         mDisplacement.y = 0.0f;
         mDisplacement.x = mVelocity.x * delta.asSeconds();
@@ -133,8 +132,8 @@ void Character::update(const sf::Time& delta)
         
         // while jumping character can move both in x direction, thats why changing velocity of x in every update call
         // based on direction
-        mVelocity.x = direction.x * speedRate;
-        mVelocity.y = (jumpInitialVelocity.y + gravityRate * Character::gravity * delta.asSeconds());
+        mVelocity.x = direction.x * pixelPerMeter * 2.2; // vel.x = 2.2m/s
+        mVelocity.y = (jumpInitialVelocity.y + pixelPerMeter * Character::gravity * delta.asSeconds()); // acceleration = 9.8 m/s2 downwards
         mDisplacement.x = mVelocity.x * delta.asSeconds();
         mDisplacement.y = mVelocity.y * delta.asSeconds();
         jumpInitialVelocity.y = mVelocity.y;

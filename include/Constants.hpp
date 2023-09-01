@@ -8,7 +8,7 @@ namespace  {
     
     inline static const unsigned int screenWidth = 800;
     inline static const unsigned int screenHeight = 600;
-
+    inline static float pixelPerMeter = 100.0f; // this represent how many pixel 1 meter of real worl represent. so vel = 2m/s will be 200 pixel/sec and acceleration of 9.8 m/s2 will 9800 pixel/s2
     inline float random(int low, int high)
     {
         std::uniform_int_distribution<> dist(low, high);

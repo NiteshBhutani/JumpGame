@@ -6,4 +6,4 @@
 																		height(10 units) becuase of acceleration. Correct solution will be if displacement is greater than 10 uints then
 																		linear interpolation to see if botton part of character passes the platform
 -- Fix all the dimension and put it constants.hpp
--- look into gracity constant and speed rate and inital velocity --- think how many pixel should player move per fram and be consistent
+-- look into gracity constant and speed rate and inital velocity --- think how many pixel should player move per frame and be consistent - done ( map real world meter -->pixels like pixelPerMeter)
