@@ -1,9 +1,54 @@
 #include "Character.hpp"
 #include "Camera.hpp"
 #include "Constants.hpp"
+#include "SFML/System/Vector2.hpp"
 #include <iostream>
+#include <vector>
+#include <limits>
 
 
+namespace {
+
+    bool calculateIntesection(std::vector<sf::Vector2f>& line1, std::vector<sf::Vector2f>& line2) {
+        auto result = false;
+        // Line1 represented as a1x + b1y = c1
+        auto& line1pt1 = line1[0];
+        auto& line1pt2 = line1[1];
+        double a1 = line1pt2.y - line1pt1.y;
+        double b1 = line1pt1.x - line1pt2.x;
+        double c1 = a1*(line1pt1.x) + b1*line1pt1.y;
+    
+        // Line2 represented as a2x + b2y = c2
+        auto& line2pt1 = line2[0];
+        auto& line2pt2 = line2[1];
+        double a2 = line2pt2.y - line2pt1.y;
+        double b2 = line2pt1.x - line2pt2.x;
+        double c2 = a2*(line2pt1.x)+ b2*(line2pt1.y);
+    
+        double determinant = a1*b2 - a2*b1;
+    
+        if (determinant != 0) {
+        
+            double x = (b2*c1 - b1*c2)/determinant;
+            double y = (a1*c2 - a2*c1)/determinant;
+            
+            //check if (x,y) lie in between line1 and line2. 
+            //std::min(x1,x2) <= x <= std::max(x1,x2) and std::min(y1,y2) <= x <= std::max(y1,y2). 
+            //Do this for both lines 
+            if( std::min(line1pt1.x, line1pt2.x) <= x && x <= std::max(line1pt1.x, line1pt2.x) &&
+                std::min(line1pt1.y, line1pt2.y) <= y && y <= std::max(line1pt1.y, line1pt2.y) &&
+                std::min(line2pt1.x, line2pt2.x) <= x && x <= std::max(line2pt1.x, line2pt2.x) &&
+                std::min(line2pt1.y, line2pt2.y) <= y && y <= std::max(line2pt1.y, line2pt2.y) ) 
+            {
+                    
+                    result = true;
+            }
+            
+        }
+
+        return result;
+    }
+}
 const float Character::speedRate = 150;
 const float Character::gravityRate = 100;
 const float Character::gravity = 9.8f;
@@ -110,7 +155,7 @@ void Character::update(const sf::Time& delta)
 
     
 }
-    
+
 void Character::draw(sf::RenderTarget& window, Camera2D& camera) {
     window.draw(mSprite, camera.getTransform());
 }
@@ -132,24 +177,19 @@ bool Character::checkCollision(Platform* p) {
     auto platformYTop = p->getPlatformYPosition();
     auto platformYBottom = p->getPlatformYPosition() + 10.0f;
     
-    std::cout << " displacement = " << mDisplacement.y << std::endl;
+    //std::cout << " displacement = " << mDisplacement.y << std::endl;
     auto charXMid = mSprite.getPosition().x;
     auto platformX = p->getPlatformXPosition();
 
+    //as height of platform is 10.0f. So if differnce in position within each update call is greater than 10.0f, then we have to use line intersection method to check collision
+    //This is too complex maybe something simpler
     if (mDisplacement.y > 10.0f) {
         //use interpolation to calculate displacement at platform position with x is within x interval of platform
         
-        sf::Vector2f intersectionPt(-1.0f, -1.0f);
         std::vector<sf::Vector2f> line1 = { sf::Vector2f(platformX.first, platformYTop), sf::Vector2f(platformX.second, platformYTop) };
         std::vector<sf::Vector2f> line2 = { sf::Vector2f(charXMid, charYBottom), sf::Vector2f(charXMid + mDisplacement.x, charYBottom + mDisplacement.y) };
-        //auto intersectionPt = findIntersection(std::vector<sf::vector2f()> line1, std::vector<sf::vector()> line2)
-        if (intersectionPt.x != -1 && intersectionPt.y != -1) {
-            mDisplacement = intersectionPt;
-            result = true;
-        }
-        else {
-            result = false;
-        }
+        result = calculateIntesection(line1, line2);
+        
         return result;
     }
     
@@ -160,7 +200,7 @@ bool Character::checkCollision(Platform* p) {
     // Here 2.5 is margin of error. There can be cases in which position sample are more than 10 units apart. For those cases, a 2.5 units
     // margin of error is added. Therefor check will between platformTop and platformBottom + 2.5. If box positon lies in bettween this then 
     // its a collision
-    if(charYBottom < platformYTop || charYBottom  > platformYBottom + 2.5 ) {
+    if(charYBottom < platformYTop || charYBottom  > platformYBottom ) {
         return false;
     }
     

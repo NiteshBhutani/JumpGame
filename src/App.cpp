@@ -62,7 +62,7 @@ void App::update(const sf::Time& delta) {
 
     //check collision
     this->checkCollisionWithPlatforms();
-
+    
     actor->update(delta);
     for(auto& p : mPlatformPool.getPlatforms())
     {
