@@ -132,9 +132,27 @@ bool Character::checkCollision(Platform* p) {
     auto platformYTop = p->getPlatformYPosition();
     auto platformYBottom = p->getPlatformYPosition() + 10.0f;
     
-    auto charXMid = mSprite.getPosition().x + 25.0f;
+    std::cout << " displacement = " << mDisplacement.y << std::endl;
+    auto charXMid = mSprite.getPosition().x;
     auto platformX = p->getPlatformXPosition();
 
+    if (mDisplacement.y > 10.0f) {
+        //use interpolation to calculate displacement at platform position with x is within x interval of platform
+        
+        sf::Vector2f intersectionPt(-1.0f, -1.0f);
+        std::vector<sf::Vector2f> line1 = { sf::Vector2f(platformX.first, platformYTop), sf::Vector2f(platformX.second, platformYTop) };
+        std::vector<sf::Vector2f> line2 = { sf::Vector2f(charXMid, charYBottom), sf::Vector2f(charXMid + mDisplacement.x, charYBottom + mDisplacement.y) };
+        //auto intersectionPt = findIntersection(std::vector<sf::vector2f()> line1, std::vector<sf::vector()> line2)
+        if (intersectionPt.x != -1 && intersectionPt.y != -1) {
+            mDisplacement = intersectionPt;
+            result = true;
+        }
+        else {
+            result = false;
+        }
+        return result;
+    }
+    
     //std::cout << "Char Y Bottom = " << charYBottom << " Char Mid = " << charXMid << std::endl;
     //std::cout << "Platform Y Top = " << platformYTop << " Platform Y Bottom = " << platformYBottom << std::endl;
     //std::cout << "Platform X Left = " << platformX.first << "Platform X Right = " << platformX.second << std::endl;
