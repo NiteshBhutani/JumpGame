@@ -39,8 +39,8 @@ Character::Character(const sf::Vector2f& pos, Platform* p) :
     mTextures[(int)Movement::Run][(int)Direction::Right].setup(runRightSprite, 0, 0, 50, 50, 8);
     mTextures[(int)Movement::Jump][(int)Direction::Left].setup(jumpLeftSprite, 0, 0, 50, 70, 1);
     mTextures[(int)Movement::Jump][(int)Direction::Right].setup(jumpRightSprite, 0, 0, 50, 50, 1);
-    mTextures[(int)Movement::Fall][(int)Direction::Left].setup(fallLeftSprite, 0, 0, 50, 50, 2);
-    mTextures[(int)Movement::Fall][(int)Direction::Right].setup(fallRightSprite, 0, 0, 50, 50, 2);
+    mTextures[(int)Movement::Fall][(int)Direction::Left].setup(fallLeftSprite, 0, 0, 50, 50, 1);
+    mTextures[(int)Movement::Fall][(int)Direction::Right].setup(fallRightSprite, 0, 0, 50, 50, 1);
     
 }
 
