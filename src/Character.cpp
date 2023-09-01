@@ -170,47 +170,67 @@ bool Character::checkCollision(Platform* p) {
         return false;
     }
 
-    bool result = true;
+    // bool result = true;
 
+    //auto charYBottom = mSprite.getPosition().y + (characterHeight/2.0f);
+    //auto platformYTop = p->getPlatformYPosition();
+    //auto platformYBottom = p->getPlatformYPosition() + platformHeight;
+    //
+    ////std::cout << " displacement = " << mDisplacement.y << std::endl;
+    //auto charXMid = mSprite.getPosition().x;
+    //auto platformX = p->getPlatformXPosition();
+
+    ////as height of platform is 10.0f. So if differnce in position within each update call is greater than 10.0f, then we have to use line intersection method to check collision
+    ////This is too complex maybe something simpler
+    //if (mDisplacement.y > platformHeight) {
+    //    //use interpolation to calculate displacement at platform position with x is within x interval of platform
+    //    
+    //    std::vector<sf::Vector2f> line1 = { sf::Vector2f(platformX.first, platformYTop), sf::Vector2f(platformX.second, platformYTop) };
+    //    std::vector<sf::Vector2f> line2 = { sf::Vector2f(charXMid, charYBottom), sf::Vector2f(charXMid + mDisplacement.x, charYBottom + mDisplacement.y) };
+    //    result = calculateIntesection(line1, line2);
+    //    
+    //    return result;
+    //}
+    //
+    ////std::cout << "Char Y Bottom = " << charYBottom << " Char Mid = " << charXMid << std::endl;
+    ////std::cout << "Platform Y Top = " << platformYTop << " Platform Y Bottom = " << platformYBottom << std::endl;
+    ////std::cout << "Platform X Left = " << platformX.first << "Platform X Right = " << platformX.second << std::endl;
+
+    //// Here 2.5 is margin of error. There can be cases in which position sample are more than 10 units apart. For those cases, a 2.5 units
+    //// margin of error is added. Therefor check will between platformTop and platformBottom + 2.5. If box positon lies in bettween this then 
+    //// its a collision
+    //if(charYBottom < platformYTop || charYBottom  > platformYBottom ) {
+    //    return false;
+    //}
+    //
+    //
+    //
+    //if(charXMid < platformX.first || charXMid > platformX.second) {
+    //    return false;
+    //}
+
+    //AABB collision 
+
+    //using a very tight bounding box for character
     auto charYBottom = mSprite.getPosition().y + (characterHeight/2.0f);
+    auto charYTop = mSprite.getPosition().y; // bottom half bounding box of character is considered
+    auto charXLeft = mSprite.getPosition().x - (characterWidth/4.0f); // 1/4 on each side from the origin
+    auto charXRight = mSprite.getPosition().x + (characterWidth/4.0f);
+
     auto platformYTop = p->getPlatformYPosition();
     auto platformYBottom = p->getPlatformYPosition() + platformHeight;
-    
-    //std::cout << " displacement = " << mDisplacement.y << std::endl;
-    auto charXMid = mSprite.getPosition().x;
-    auto platformX = p->getPlatformXPosition();
+    auto platformXLeft = p->getPlatformXPosition().first;
+    auto platformXRight = p->getPlatformXPosition().second;
 
-    //as height of platform is 10.0f. So if differnce in position within each update call is greater than 10.0f, then we have to use line intersection method to check collision
-    //This is too complex maybe something simpler
-    if (mDisplacement.y > platformHeight) {
-        //use interpolation to calculate displacement at platform position with x is within x interval of platform
-        
-        std::vector<sf::Vector2f> line1 = { sf::Vector2f(platformX.first, platformYTop), sf::Vector2f(platformX.second, platformYTop) };
-        std::vector<sf::Vector2f> line2 = { sf::Vector2f(charXMid, charYBottom), sf::Vector2f(charXMid + mDisplacement.x, charYBottom + mDisplacement.y) };
-        result = calculateIntesection(line1, line2);
-        
-        return result;
-    }
-    
-    //std::cout << "Char Y Bottom = " << charYBottom << " Char Mid = " << charXMid << std::endl;
-    //std::cout << "Platform Y Top = " << platformYTop << " Platform Y Bottom = " << platformYBottom << std::endl;
-    //std::cout << "Platform X Left = " << platformX.first << "Platform X Right = " << platformX.second << std::endl;
-
-    // Here 2.5 is margin of error. There can be cases in which position sample are more than 10 units apart. For those cases, a 2.5 units
-    // margin of error is added. Therefor check will between platformTop and platformBottom + 2.5. If box positon lies in bettween this then 
-    // its a collision
-    if(charYBottom < platformYTop || charYBottom  > platformYBottom ) {
-        return false;
-    }
-    
-    
-    
-    if(charXMid < platformX.first || charXMid > platformX.second) {
+    if (charYBottom < platformYTop || platformYBottom < charYTop) {
         return false;
     }
 
-    
-    return result;
+    if (charXRight < platformXLeft || platformXRight < charXLeft) {
+        return false;
+    }
+
+    return true;
 }
     
 void Character::updateRestingPlatform(Platform* p) {
