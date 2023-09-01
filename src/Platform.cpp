@@ -5,7 +5,7 @@
 
 
 Platform::Platform(float width, float y, float x) :
-    mSize(sf::Vector2f(width, 10.0f)),
+    mSize(sf::Vector2f(width, platformHeight)),
     mSprite(),
     mVelocity(0.0, 0.0f)
 {
@@ -13,7 +13,7 @@ Platform::Platform(float width, float y, float x) :
     mSprite.setSize(mSize);
     mSprite.setFillColor(sf::Color::Yellow);
     mSprite.setOutlineColor(sf::Color::Red);
-    mSprite.setOutlineThickness(2);
+    mSprite.setOutlineThickness(platformOutlineThickness);
 }
 
 void Platform::update(const sf::Time& delta) {

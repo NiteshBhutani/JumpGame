@@ -66,7 +66,7 @@ Character::Character(const sf::Vector2f& pos, Platform* p) :
     mMovement(Movement::Idle)
 {
     mSprite.setPosition(pos);
-    mSprite.setOrigin(25.0f, 25.0f);
+    mSprite.setOrigin(characterWidth/2.0f, characterHeight/2.0f);
 
     std::string idleRightSprite = "../assets/IdleRight.png";
     std::string runRightSprite = "../assets/RunRight.png";
@@ -77,14 +77,14 @@ Character::Character(const sf::Vector2f& pos, Platform* p) :
     std::string jumpLeftSprite = "../assets/JumpLeft.png";
     std::string fallLeftSprite = "../assets/FallLeft.png";
     
-    mTextures[(int)Movement::Idle][(int)Direction::Left].setup(idleLeftSprite, 0, 0, 50, 50, 5);
-    mTextures[(int)Movement::Idle][(int)Direction::Right].setup(idleRightSprite, 0, 0, 50, 50, 5);
-    mTextures[(int)Movement::Run][(int)Direction::Left].setup(runLeftSprite, 0, 0, 50, 50, 8);
-    mTextures[(int)Movement::Run][(int)Direction::Right].setup(runRightSprite, 0, 0, 50, 50, 8);
-    mTextures[(int)Movement::Jump][(int)Direction::Left].setup(jumpLeftSprite, 0, 0, 50, 70, 1);
-    mTextures[(int)Movement::Jump][(int)Direction::Right].setup(jumpRightSprite, 0, 0, 50, 50, 1);
-    mTextures[(int)Movement::Fall][(int)Direction::Left].setup(fallLeftSprite, 0, 0, 50, 50, 1);
-    mTextures[(int)Movement::Fall][(int)Direction::Right].setup(fallRightSprite, 0, 0, 50, 50, 1);
+    mTextures[(int)Movement::Idle][(int)Direction::Left].setup(idleLeftSprite, 0, 0, (int)characterWidth, (int)characterHeight, 5);
+    mTextures[(int)Movement::Idle][(int)Direction::Right].setup(idleRightSprite, 0, 0, (int)characterWidth, (int)characterHeight, 5);
+    mTextures[(int)Movement::Run][(int)Direction::Left].setup(runLeftSprite, 0, 0, (int)characterWidth, (int)characterHeight, 8);
+    mTextures[(int)Movement::Run][(int)Direction::Right].setup(runRightSprite, 0, 0, (int)characterWidth, (int)characterHeight, 8);
+    mTextures[(int)Movement::Jump][(int)Direction::Left].setup(jumpLeftSprite, 0, 0, (int)characterWidth, (int)characterHeight, 1);
+    mTextures[(int)Movement::Jump][(int)Direction::Right].setup(jumpRightSprite, 0, 0, (int)characterWidth, (int)characterHeight, 1);
+    mTextures[(int)Movement::Fall][(int)Direction::Left].setup(fallLeftSprite, 0, 0, (int)characterWidth, (int)characterHeight, 1);
+    mTextures[(int)Movement::Fall][(int)Direction::Right].setup(fallRightSprite, 0, 0, (int)characterWidth, (int)characterHeight, 1);
     
 }
 
@@ -106,14 +106,14 @@ void Character::update(const sf::Time& delta)
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && !isJumping) {
-        jumpInitialVelocity = { 0.0f , -8.0f * pixelPerMeter }; // inital up speed on -8m/s
+        jumpInitialVelocity = { 0.0f , jumpYSpeed * pixelPerMeter }; // inital up speed on -8m/s
         isJumping = true;
     }
 
     // jump physics
     if(!isJumping) {
         //if not jumping then only character can only move in x-direction
-        mVelocity.x = (direction.x * pixelPerMeter);//vel.x = 2m/s * direction
+        mVelocity.x = (direction.x * pixelPerMeter);//vel.x = 1m/s * direction
         mVelocity.y = 0.0f;
         mDisplacement.y = 0.0f;
         mDisplacement.x = mVelocity.x * delta.asSeconds();
@@ -132,7 +132,7 @@ void Character::update(const sf::Time& delta)
         
         // while jumping character can move both in x direction, thats why changing velocity of x in every update call
         // based on direction
-        mVelocity.x = direction.x * pixelPerMeter * 2.2; // vel.x = 2.2m/s
+        mVelocity.x = direction.x * pixelPerMeter * jumpXSpeed; // vel.x = 2.2m/s
         mVelocity.y = (jumpInitialVelocity.y + pixelPerMeter * Character::gravity * delta.asSeconds()); // acceleration = 9.8 m/s2 downwards
         mDisplacement.x = mVelocity.x * delta.asSeconds();
         mDisplacement.y = mVelocity.y * delta.asSeconds();
@@ -172,9 +172,9 @@ bool Character::checkCollision(Platform* p) {
 
     bool result = true;
 
-    auto charYBottom = mSprite.getPosition().y + 25.0f;
+    auto charYBottom = mSprite.getPosition().y + (characterHeight/2.0f);
     auto platformYTop = p->getPlatformYPosition();
-    auto platformYBottom = p->getPlatformYPosition() + 10.0f;
+    auto platformYBottom = p->getPlatformYPosition() + platformHeight;
     
     //std::cout << " displacement = " << mDisplacement.y << std::endl;
     auto charXMid = mSprite.getPosition().x;
@@ -182,7 +182,7 @@ bool Character::checkCollision(Platform* p) {
 
     //as height of platform is 10.0f. So if differnce in position within each update call is greater than 10.0f, then we have to use line intersection method to check collision
     //This is too complex maybe something simpler
-    if (mDisplacement.y > 10.0f) {
+    if (mDisplacement.y > platformHeight) {
         //use interpolation to calculate displacement at platform position with x is within x interval of platform
         
         std::vector<sf::Vector2f> line1 = { sf::Vector2f(platformX.first, platformYTop), sf::Vector2f(platformX.second, platformYTop) };
@@ -217,7 +217,7 @@ void Character::updateRestingPlatform(Platform* p) {
     mRestingPlatform = p;
     isJumping = false;
     jumpInitialVelocity = {0.0f, 0.0f};
-    mSprite.setPosition(sf::Vector2f(mSprite.getPosition().x, mRestingPlatform->getPlatformYPosition()-28.0f));
+    mSprite.setPosition(sf::Vector2f(mSprite.getPosition().x, mRestingPlatform->getPlatformYPosition()- platformOutlineThickness - characterHeight/2.0f - 1/*for padding*/));
     
 }
 
